@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 import warnings
 from BaseExtractor import BaseExtractor
 from transformers import BitsAndBytesConfig
@@ -28,15 +28,24 @@ class OpenAIExtractor(BaseExtractor):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
         
-    def process_image(self, image_path: str, sys_prompt: str, user_prompt: str, api_key: Optional[str] = None) -> str:
+    def process_input(self, image_path: str | List[str], sys_prompt: str, user_prompt: str, api_key: Optional[str] = None) -> str:
         if api_key:
             openai.api_key = api_key
         else:
             openai.api_key = self.api_key
 
-        base64_image = self.encode_image(image_path)
+        if isinstance(image_path, str):
+           image_path = [image_path]
+         
+        base64_images = [self.encode_image(img) for img in image_path]
 
         try:
+            # Create user content with text and all images using list comprehension
+            user_content = [
+                {"type": "text", "text": user_prompt},
+                *[{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img}"}} for img in base64_images]
+            ]
+            
             response = openai.chat.completions.create(
                 model=self.model_name,
                 messages=[
@@ -48,10 +57,7 @@ class OpenAIExtractor(BaseExtractor):
                     },
                     {
                         "role": "user",
-                        "content": [
-                            {"type": "text", "text": user_prompt},
-                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                        ]
+                        "content": user_content
                     }
                 ]
             )

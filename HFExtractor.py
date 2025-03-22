@@ -76,12 +76,15 @@ class HFExtractor(BaseExtractor):
             raise TypeError(
                 f"Quantization should be either a string, dictionary or BitsAndBytesConfig object. Got {type(quant)}")
 
-    def process_image(self, image_path: str, sys_prompt: str, user_prompt: str) -> str:
+    def process_input(self, image_path: str, sys_prompt: str, user_prompt: str) -> str:
         # Load image
         if image_path.startswith('http'):
             image = Image.open(requests.get(image_path, stream=True).raw)
         else:
             image = Image.open(image_path)
+            
+        if not isinstance(image_path, str):
+            raise TypeError("Image path should be a string for Hugging Face.")
 
         # Define a chat histiry and use `apply_chat_template` to get correctly formatted prompt
         # Each value in "content" has to be a list of dicts with types ("text", "image")
