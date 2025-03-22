@@ -19,7 +19,7 @@ class GrammarExtractor:
 
     def get_system_prompt(self) -> str:
         return """
-        You are a helpful assistant to extract the content of a pdf document of a japanese grammar textbook and structured output file from it.
+        You are a helpful assistant to extract the content of a pdf document of a japanese grammar textbook and structured output file, i.e. markdown from it.
         You are not provided with the actual pdf but instead the images of each page of the pdf. For one pdf you therefore likely have multiple images.
         The order of the images is reflected in the order how they are passed in the prompt.
         The image is from an english textbook for learning japanese so it consists of english explanations and japanese examples.
@@ -39,6 +39,8 @@ class GrammarExtractor:
         In addition to the image you are also provided with the result of an OCR extraction which is not perfect and contains some errors.
         One challenge is the existance of furigana (small kana above kanji) which is not always correctly recognized.
         In the extracted text you should remove the furigana and only keep the actual kanji.
+        
+        The output should be only the markdown file without any additional text before or after the extracted content.
     """
     
     def get_user_prompt(self, ocr_text: str) -> str:
@@ -47,7 +49,7 @@ class GrammarExtractor:
     
     def _convert_to_image(self, pdf_path: str | Path, output_dir: str | Path) -> List[Tuple[int, Path]]:
         # Convert PDF to images
-        print(f"Converting PDF to images...")
+        print(f"Converting PDF to images")
         images = pdf2image.convert_from_path(
             pdf_path, 
             dpi=300
@@ -64,22 +66,27 @@ class GrammarExtractor:
         return page_images
     
     def _extract_text(self, img_path: Path) -> str:
-        # Extract text from all images in a directory using OCR
-        ocr = TesseractOCR(config=self.tesseract_conf)
-        text = ocr.process_directory(input_dir=img_path,
-                                     config=self.tesseract_conf,
-                                     return_text=True,
-                                     combine_output=True)
+        # Extract text from an image file using OCR
+        ocr = TesseractOCR(default_config=self.tesseract_conf)
+        text = ocr.process_file(input_file=img_path,
+                                config=self.tesseract_conf,
+                                return_text=True,
+                                combine_output=True)
         return text
     
     def process_pdf(self, pdf_path: str | Path, output_dir: str | Path) -> str:
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
+        pdf_path : Path = Path(pdf_path)
         
         # Create temporary directory for images
         with tempfile.TemporaryDirectory() as tmp_dir:
             page_images = self._convert_to_image(pdf_path, tmp_dir)
             images = [img_path for _, img_path in page_images]
-            ocr_text = self._extract_text(tmp_dir)
+            ocr_text = "\n\n".join([self._extract_text(img) for img in images])
             response = self.model.process_input(images, self.get_system_prompt(), self.get_user_prompt(ocr_text))
+        # Remove markdown formatting
+        response.replace("```", "").replace("```markdown", "")
+        with open(Path(output_dir) / f"{pdf_path.stem}.md", "w", encoding='utf-8') as f:
+            f.write(response)
         return response

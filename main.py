@@ -11,7 +11,8 @@ if __name__ == '__main__':
     extractor = GrammarExtractor(
         model,
     )
-    extractor.process_pdf(
-        pdf_path="input/Lesson34.pdf",
+    result = extractor.process_pdf(
+        pdf_path="input/Lesson35.pdf",
         output_dir="output",
     )
+    print(result)
