@@ -15,7 +15,7 @@ class BaseExtractor:
     
     def __init__(self, model: str, quant: Optional[str|Dict|BitsAndBytesConfig] = None):
         self.system_prompt = self.get_system_prompt()
-        self.model = model
+        self.model_name = model
         self.model_source = self._determine_model_source()
         self.quant = self._set_quant(quant)
         
@@ -25,13 +25,13 @@ class BaseExtractor:
         return "You are a helpful assistant to extract some data from an image with the help of OCR input."
     
     def _determine_model_source(self) -> str:
-        if self.model in self.MODEL_SOURCE:
-            return self.MODEL_SOURCE[self.model]
+        if self.model_name in self.MODEL_SOURCE:
+            return self.MODEL_SOURCE[self.model_name]
         else:
-            if "hf" in self.model:
+            if "hf" in self.model_name:
                 return "hf"
         
-        raise ValueError(f"Model Source could not be determined for {self.model}.")
+        raise ValueError(f"Model Source could not be determined for {self.model_name}.")
     
     def _set_quant(self, quant: Optional[str|Dict|BitsAndBytesConfig] = None) -> Optional[BitsAndBytesConfig]:
         if self.model_source != "hf":
@@ -55,3 +55,6 @@ class BaseExtractor:
             return quant_conf
         else:
             raise TypeError(f"Quantization should be either a string, dictionary or BitsAndBytesConfig object. Got {type(quant)}")
+        
+    def process_image(self, image_path: str, sys_prompt: str, user_prompt: str) -> str:
+        raise NotImplementedError("This method should be implemented by the subclass.")

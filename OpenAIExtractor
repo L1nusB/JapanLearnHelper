@@ -2,6 +2,8 @@ from typing import Optional, Dict
 import warnings
 from BaseExtractor import BaseExtractor
 from transformers import BitsAndBytesConfig
+import base64
+import openai
 
 class OpenAIExtractor(BaseExtractor):
     MODELS = {
@@ -9,10 +11,11 @@ class OpenAIExtractor(BaseExtractor):
         "gpt-4o-mini"
     }
     
-    def __init__(self, model: str, quant: Optional[str|Dict] = None):
+    def __init__(self, model: str, quant: Optional[str|Dict] = None, api_key: Optional[str] = None):
         if model not in self.MODELS:
             raise ValueError(f"Model {model} not supported for OpenAIExtractor. Supported models are {self.MODELS}")
         super().__init__(model, quant)
+        self.api_key = api_key
     
     def _determine_model_source(self) -> str:
         return "openai"
@@ -20,3 +23,40 @@ class OpenAIExtractor(BaseExtractor):
     def _set_quant(self, quant: Optional[str|Dict|BitsAndBytesConfig] = None) -> Optional[BitsAndBytesConfig]:
         warnings.warn("Quantization is not supported for non-Hugging Face models.")
         return None
+    
+    def encode_image(self, image_path: str) -> str:
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+        
+    def process_image(self, image_path: str, sys_prompt: str, user_prompt: str, api_key: Optional[str] = None) -> str:
+        if api_key:
+            openai.api_key = api_key
+        else:
+            openai.api_key = self.api_key
+
+        base64_image = self.encode_image(image_path)
+
+        try:
+            response = openai.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": [
+                            {"type": "text", "text": sys_prompt},
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": user_prompt},
+                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                        ]
+                    }
+                ]
+            )
+
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"Error with {self.model_name}: {str(e)}")
+            return None
