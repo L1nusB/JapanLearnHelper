@@ -5,13 +5,13 @@ from typing import List, Tuple, Optional, Dict
 import pdf2image
 
 from japanese_ocr import TesseractOCR, TesseractConfig
-from BaseExtractor import BaseExtractor
+from BaseModel import BaseModel
 
 class GrammarExtractor:
     def __init__(self, 
-                 extractor: BaseExtractor,
+                 model: BaseModel,
                  max_workers: int = 4):
-        self.extractor = extractor
+        self.model = model
         self.max_workers = max_workers
         self.tesseract_conf = TesseractConfig(
             lang="eng+jpn",
@@ -83,5 +83,5 @@ class GrammarExtractor:
             page_images = self._convert_to_image(pdf_path, tmp_dir)
             images = [img_path for _, img_path in page_images]
             ocr_text = self._extract_text(tmp_dir)
-            response = self.extractor.process_input(images, self.get_system_prompt(), self.get_user_prompt(ocr_text))
+            response = self.model.process_input(images, self.get_system_prompt(), self.get_user_prompt(ocr_text))
         return response

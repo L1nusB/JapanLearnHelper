@@ -4,7 +4,7 @@ from transformers import BitsAndBytesConfig
 import torch
 from pathlib import Path
 
-class BaseExtractor:
+class BaseModel:
     MODEL_SOURCE = {
         "gpt-4o": "openai",
         "gpt-4o-mini": "openai",

@@ -5,11 +5,11 @@ import warnings
 from PIL import Image
 import requests
 from huggingface_hub import login
-from BaseExtractor import BaseExtractor
+from BaseModel import BaseModel
 from transformers import BitsAndBytesConfig, AutoProcessor, AutoModelForCausalLM, LlavaNextForConditionalGeneration, LlavaForConditionalGeneration
 
 
-class HFExtractor(BaseExtractor):
+class HFModel(BaseModel):
     MODELS: Dict[str, AutoModelForCausalLM] = {
         "llava-hf/llava-1.5-7b-hf": LlavaForConditionalGeneration,
         "llava-hf/llama3-llava-next-8b-hf": LlavaNextForConditionalGeneration
@@ -18,7 +18,7 @@ class HFExtractor(BaseExtractor):
     def __init__(self, model: str, hf_token: Optional[str] = None, quant: Optional[str | Dict] = None):
         if model not in self.MODELS:
             warnings.warn(
-                f"Model {model} not directly supported for HFExtractor. Supported models are {self.MODELS}. This might lead to unexpected behavior.")
+                f"Model {model} not directly supported for HFModel. Supported models are {self.MODELS}. This might lead to unexpected behavior.")
         super().__init__(model, quant)
 
         self._signin_hf(hf_token)
@@ -28,7 +28,7 @@ class HFExtractor(BaseExtractor):
     def _load_model(self):
         if model not in self.MODELS:
             warnings.warn(
-                f"Model {model} not directly supported for HFExtractor. Supported models are {self.MODELS}. Try to use AutoModelForCausalLM instead.")
+                f"Model {model} not directly supported for HFModel. Supported models are {self.MODELS}. Try to use AutoModelForCausalLM instead.")
 
         model = self.MODELS[self.model_name].from_pretrained(self.model_name,
                                                              quantization_config=self.quant,

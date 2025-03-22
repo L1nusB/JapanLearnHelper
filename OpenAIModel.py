@@ -1,20 +1,20 @@
 from typing import Optional, Dict, List
 import warnings
-from BaseExtractor import BaseExtractor
+from BaseModel import BaseModel
 from transformers import BitsAndBytesConfig
 import base64
 import openai
 
-class OpenAIExtractor(BaseExtractor):
+class OpenAIModel(BaseModel):
     MODELS = {
         "gpt-4o",
         "gpt-4o-mini"
     }
     
-    def __init__(self, model: str, quant: Optional[str|Dict] = None, api_key: Optional[str] = None):
+    def __init__(self, model: str, api_key: Optional[str] = None):
         if model not in self.MODELS:
-            raise ValueError(f"Model {model} not supported for OpenAIExtractor. Supported models are {self.MODELS}")
-        super().__init__(model, quant)
+            raise ValueError(f"Model {model} not supported for OpenAIModel. Supported models are {self.MODELS}")
+        super().__init__(model)
         self.api_key = api_key
     
     def _determine_model_source(self) -> str:
