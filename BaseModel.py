@@ -1,8 +1,9 @@
 import warnings
-from typing import Optional, Dict, List, Tuple
-from transformers import BitsAndBytesConfig
-import torch
+from typing import Optional, Dict, List, TYPE_CHECKING
 from pathlib import Path
+
+if TYPE_CHECKING:
+    from transformers import BitsAndBytesConfig
 
 class BaseModel:
     MODEL_SOURCE = {
@@ -14,8 +15,7 @@ class BaseModel:
         "llava-hf/llama3-llava-next-8b-hf" : "hf",
     }
     
-    def __init__(self, model: str, quant: Optional[str|Dict|BitsAndBytesConfig] = None):
-        self.system_prompt = self.get_system_prompt()
+    def __init__(self, model: str, quant: Optional[str|Dict|'BitsAndBytesConfig'] = None):
         self.model_name = model
         self.model_source = self._determine_model_source()
         self.quant = self._set_quant(quant)
@@ -34,10 +34,13 @@ class BaseModel:
         
         raise ValueError(f"Model Source could not be determined for {self.model_name}.")
     
-    def _set_quant(self, quant: Optional[str|Dict|BitsAndBytesConfig] = None) -> Optional[BitsAndBytesConfig]:
+    def _set_quant(self, quant: Optional[str|Dict|'BitsAndBytesConfig'] = None) -> Optional['BitsAndBytesConfig']:
         if self.model_source != "hf":
             warnings.warn("Quantization is not supported for non-Hugging Face models.")
             return None
+        # Move import here to make loading faster
+        from transformers import BitsAndBytesConfig
+        import torch 
         
         if quant is None or isinstance(quant, BitsAndBytesConfig):
             return quant

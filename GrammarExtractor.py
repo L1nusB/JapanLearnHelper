@@ -9,10 +9,8 @@ from BaseModel import BaseModel
 
 class GrammarExtractor:
     def __init__(self, 
-                 model: BaseModel,
-                 max_workers: int = 4):
+                 model: BaseModel):
         self.model = model
-        self.max_workers = max_workers
         self.tesseract_conf = TesseractConfig(
             lang="eng+jpn",
             oem=3,

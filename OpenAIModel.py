@@ -1,9 +1,8 @@
 from typing import Optional, Dict, List
 import warnings
 from BaseModel import BaseModel
-from transformers import BitsAndBytesConfig
-import base64
 import openai
+import base64
 
 class OpenAIModel(BaseModel):
     MODELS = {
@@ -20,8 +19,7 @@ class OpenAIModel(BaseModel):
     def _determine_model_source(self) -> str:
         return "openai"
         
-    def _set_quant(self, quant: Optional[str|Dict|BitsAndBytesConfig] = None) -> Optional[BitsAndBytesConfig]:
-        warnings.warn("Quantization is not supported for non-Hugging Face models.")
+    def _set_quant(self, quant = None) -> None:
         return None
     
     def encode_image(self, image_path: str) -> str:
