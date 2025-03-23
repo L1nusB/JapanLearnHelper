@@ -19,7 +19,7 @@ class GrammarExtractor:
 
     def get_system_prompt(self) -> str:
         return """
-        You are a helpful assistant to extract the content of a pdf document of a japanese grammar textbook and structured output file, i.e. markdown from it.
+        You are a helpful assistant to extract the content of a pdf document of a japanese grammar textbook and create a structured output file, i.e. markdown from it.
         You are not provided with the actual pdf but instead the images of each page of the pdf. For one pdf you therefore likely have multiple images.
         The order of the images is reflected in the order how they are passed in the prompt.
         The image is from an english textbook for learning japanese so it consists of english explanations and japanese examples.

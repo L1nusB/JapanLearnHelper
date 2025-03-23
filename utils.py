@@ -2,6 +2,7 @@ import re
 from typing import List, Optional, Tuple
 import pdf2image
 from pathlib import Path
+import deepl
 
 from japanese_ocr import TesseractOCR, TesseractConfig
 
