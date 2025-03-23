@@ -1,5 +1,7 @@
+import json
 import re
-from typing import List, Optional, Tuple
+import time
+from typing import List, Optional, Tuple, Dict, Any
 import pdf2image
 from pathlib import Path
 import deepl
@@ -80,3 +82,64 @@ def extract_text_from_image(img_path: Path,
                             return_text=True,
                             combine_output=True)
     return text
+
+def translate_text(text: str, 
+                   translator: deepl.Translator, 
+                   source_lang: str = "ja", 
+                   target_lang: str = "en-us") -> str:
+    # Translate text from source to target language
+    translation = translator.translate_text(text, source_lang=source_lang, target_lang=target_lang)
+    return translation.text
+
+def translate_json(json_data: Dict[Any, str],
+                   translator: deepl.Translator, 
+                   entry_key: str = "examples",
+                   item_key: str = "japanese",
+                   translated_key: str = "deepl",
+                   source_lang: str = "ja", 
+                   target_lang: str = "en-us") -> Dict[Any, str]:
+    # Translate JSON data from source to target language
+    for item in json_data[entry_key]:
+        source_text = item[item_key]
+        try:
+            # Make the API call to DeepL
+            result = translator.translate_text(source_text, 
+                                               source_lang=source_lang, 
+                                               target_lang=target_lang)
+            
+            # Add the DeepL translation to the item
+            item[translated_key] = result.text
+            # Sleep briefly to avoid hitting rate limits (free tier has limitations)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"Error translating: {source_text}")
+            print(f"Error message: {str(e)}")
+            
+    return json_data
+
+def translate_json_file(json_file: str | Path,
+                        translator: deepl.Translator,
+                        output_file: Optional[str | Path] = None,
+                        entry_key: str = "examples",
+                        item_key: str = "japanese",
+                        translated_key: str = "deepl",
+                        source_lang: str = "ja",
+                        target_lang: str = "en-us") -> None:
+    if output_file is None:
+        output_file = json_file
+    # Load your JSON file
+    with open(json_file, "r", encoding="utf-8") as file:
+        data = json.load(file)
+        
+    # Translate the JSON data
+    translated_data = translate_json(data,
+                                     translator,
+                                     entry_key=entry_key,
+                                     item_key=item_key,
+                                     translated_key=translated_key,
+                                     source_lang=source_lang,
+                                     target_lang=target_lang)
+        
+    # Save the updated data back to a new JSON file
+    with open(output_file, "w", encoding="utf-8") as file:
+        json.dump(translated_data, file, ensure_ascii=False, indent=4)

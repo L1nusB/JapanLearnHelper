@@ -1,15 +1,18 @@
 from pathlib import Path
 import os
 import tempfile
+from typing import Optional
 
 from japanese_ocr import TesseractOCR, TesseractConfig
 from BaseModel import BaseModel
+from deepl import Translator
 import utils
 import json
 
 class ExampleExtractor:
     def __init__(self, 
-                 model: BaseModel):
+                 model: BaseModel,
+                 deepl: Optional[Translator] = None):
         self.model = model
         self.tesseract_conf = TesseractConfig(
             lang="eng+jpn",
@@ -17,6 +20,7 @@ class ExampleExtractor:
             psm=6,
         )
         self.tesseract_ocr = TesseractOCR(default_config=self.tesseract_conf)
+        self.deepl = deepl
 
     def get_system_prompt(self) -> str:
         return """
@@ -68,7 +72,7 @@ class ExampleExtractor:
         return f"""Here is the result of the OCR extraction of the entire document which you should consider as an additional reference
     when extracting the text from the images. The OCR text is as follows: {ocr_text}"""
     
-    def process_pdf(self, pdf_path: str | Path, output_dir: str | Path) -> str:
+    def process_pdf(self, pdf_path: str | Path, output_dir: str | Path, use_deepl: bool = False) -> str:
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         pdf_path : Path = Path(pdf_path)
@@ -83,11 +87,12 @@ class ExampleExtractor:
         with open(Path(output_dir) / f"{pdf_path.stem}.md", "w", encoding='utf-8') as f:
             f.write(response)
         
-        print(response)
         json_response = utils.extract_code_blocks(response, language="json")
-        with open(Path(output_dir) / f"{pdf_path.stem}.json", "w", encoding='utf-8') as f:
-            f.write(json_response)
         json_data = json.loads(json_response)
-        print(json_data)
+        if self.deepl and use_deepl:
+            json_response = utils.translate_json(json_data, self.deepl)
+
+        with open(Path(output_dir) / f"{pdf_path.stem}.json", "w", encoding='utf-8') as f:
+            json.dump(json_response, f, ensure_ascii=False, indent=4)
             
         return response
