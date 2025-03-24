@@ -48,6 +48,7 @@ class GrammarExtractor:
     when extracting the text from the images. The OCR text is as follows: {ocr_text}"""
     
     def process_pdf(self, pdf_path: str | Path, output_dir: str | Path) -> str:
+        print("Processing Grammar for PDF:", pdf_path)
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         pdf_path : Path = Path(pdf_path)

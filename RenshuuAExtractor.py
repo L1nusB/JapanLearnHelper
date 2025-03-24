@@ -45,12 +45,17 @@ class RenshuuAExtractor:
     You can also assume that each example contains sentences to a shared grammatical construct and you might use translations to ensure correctness of the japanese text.
         
     It is possible that the first example is one or multiple tables, typically showing a conjugation or declension pattern, which you should ignore and not include in the output.
-    Here a partial example of the structure of the text and coloring and the expected output. Here the color is given and then is valid until the next color is given:
+    Here a partial example of the structure of the text and coloring and the expected output. 
+    Here the color is given and then is valid until the next color is given. If no text comes after the color it represents this part missing in a sentence.
+    These missing parts should either be filled with the shared part for white/no background or be left empty for light red background.:
         2. [light red]あそこに[strong red]車をとめるな[white]と[light red]書いてあります。
            [light red]あの漢字は[strong red]いりぐち[white]と[light red]読みます。
         3. [white]このマークは[light red][strong red]とまれ[white]という意味です。
-           [light red]水で[strong red]あらってはいけない
-           [light red][strong red]リサイクルできる
+           [white][light red]水で[strong red]あらってはいけない[white]
+           [white][light red][strong red]リサイクルできる[white]
+        4. [white]山田さんは[light red]あした5時に[strong red]くる[white]と言っていました。
+           [white][light red]締切に[strong red]間に合わない[white]
+           [white][light red]きのう荷物を[strong red]おくった[white]
     Expected output:
         {
             "examples": [
@@ -73,6 +78,18 @@ class RenshuuAExtractor:
                 {
                     "japanese": "このマークはリサイクルできるという意味です。",
                     "english": "This mark means 'Recyclable.'"
+                },
+                {
+                    "japanese": "山田さんはあした5時にくると言っていました。",
+                    "english": "Yamada said he will come at 5 o'clock tomorrow."
+                },
+                {
+                    "japanese": "山田さんは締切に間に合わない。",
+                    "english": "Yamada won't make the deadline."
+                },
+                {
+                    "japanese": "山田さんはきのう荷物をおくった。",
+                    "english": "Yamada sent the package yesterday."
                 }
             ]
         }
@@ -109,6 +126,7 @@ class RenshuuAExtractor:
     when extracting the text from the images. The OCR text is as follows: {ocr_text}"""
     
     def process_pdf(self, pdf_path: str | Path, output_dir: str | Path, use_deepl: bool = False) -> str:
+        print("Processing Renshuu A for PDF:", pdf_path)
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         pdf_path : Path = Path(pdf_path)
