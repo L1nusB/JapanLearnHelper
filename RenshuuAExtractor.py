@@ -36,11 +36,13 @@ class RenshuuAExtractor:
     However, in general each sentence in an example is positioned in a separate line and thereby can be identified also in the OCR result.
     Each example is identified by a number at the start of the first sentence of the example, while the sentences themselves are not numbered but separated by newlines.
     One additional cue is the different colors/hues of the background in the image which can help to identify the different parts of the sentences.
-    - Parts that are shared for all sentences of an example have no/white background. Not all examples necessarily have shared parts.
+    - Parts that are shared for all sentences of an example have no/white background. Not all examples necessarily have shared parts, but if they do they are always present for all sentences.
     - Parts that vary per sentence have a light red or stronger red background.
         - The content of the strong red background is always present for each sentence and typically is a verb related to a grammatical concept.
         - The content of the light red background is optional, albeit mostly being present in the sentences.
         - Note that each sentence can contain multiple parts with a light or stronger red background, albeit mostly only one part with a strong red background.
+    Make sure that in case for one sentence a shared part i.e. white/no background is detected it is just for all sentences of that example.
+    You can also assume that each example contains sentences to a shared grammatical construct and you might use translations to ensure correctness of the japanese text.
         
     It is possible that the first example is one or multiple tables, typically showing a conjugation or declension pattern, which you should ignore and not include in the output.
     Here a partial example of the structure of the text and coloring and the expected output. Here the color is given and then is valid until the next color is given:
@@ -128,6 +130,8 @@ class RenshuuAExtractor:
         json_data = json.loads(json_response)
         if self.deepl and use_deepl:
             json_response = utils.translate_json(json_data, self.deepl)
+        else:
+            json_response = json_data
 
         with open(Path(output_dir) / f"{pdf_path.stem}.json", "w", encoding='utf-8') as f:
             json.dump(json_response, f, ensure_ascii=False, indent=4)

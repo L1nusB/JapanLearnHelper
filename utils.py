@@ -8,10 +8,10 @@ import deepl
 
 from japanese_ocr import TesseractOCR, TesseractConfig
 
-def clean_output(text, delimiter: str = r"<|assistant|>", artifacts: List[str] = [r"\|im_start\|unk", r"\|im_end\|"]):
+def clean_output(text, delimiter: str = r"<|assistant|>", artifacts: List[str] = [r"|im_start|unk", r"|im_end|"]):
     """Clean output from special tokens and formatting artifacts.
     
-    LLama Delimiter: <\|start_header_id\|>assistant<\|end_header_id\|>
+    LLama Delimiter: <|start_header_id|>assistant<|end_header_id|>
     Phi Delimiter: <|assistant|>
     QWEN Delimiter: |im_start|unk'
     """

@@ -91,6 +91,8 @@ class ExampleExtractor:
         json_data = json.loads(json_response)
         if self.deepl and use_deepl:
             json_response = utils.translate_json(json_data, self.deepl)
+        else:
+            json_response = json_data
 
         with open(Path(output_dir) / f"{pdf_path.stem}.json", "w", encoding='utf-8') as f:
             json.dump(json_response, f, ensure_ascii=False, indent=4)

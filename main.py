@@ -34,7 +34,17 @@ if __name__ == '__main__':
     #     use_deepl=False
     # )
     result = renshuuA_extractor.process_pdf(
+        pdf_path="input/Lesson33RenshuuA.pdf",
+        output_dir="output",
+        use_deepl=False
+    )
+    result = renshuuA_extractor.process_pdf(
         pdf_path="input/Lesson34RenshuuA.pdf",
+        output_dir="output",
+        use_deepl=False
+    )
+    result = renshuuA_extractor.process_pdf(
+        pdf_path="input/Lesson35RenshuuA.pdf",
         output_dir="output",
         use_deepl=False
     )
