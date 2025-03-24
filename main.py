@@ -1,5 +1,6 @@
 from GrammarExtractor import GrammarExtractor
 from ExampleExtractor import ExampleExtractor
+from RenshuuAExtractor import RenshuuAExtractor
 from OpenAIModel import OpenAIModel
 from dotenv import dotenv_values
 import deepl
@@ -19,12 +20,21 @@ if __name__ == '__main__':
         model,
         translator
     )
+    renshuuA_extractor = RenshuuAExtractor(
+        model,
+        translator
+    )
     # result = grammar_extractor.process_pdf(
     #     pdf_path="input/Lesson35.pdf",
     #     output_dir="output",
     # )
-    result = example_extractor.process_pdf(
-        pdf_path="input/TextbookLesson32Examples.pdf",
+    # result = example_extractor.process_pdf(
+    #     pdf_path="input/TextbookLesson32Examples.pdf",
+    #     output_dir="output",
+    #     use_deepl=False
+    # )
+    result = renshuuA_extractor.process_pdf(
+        pdf_path="input/Lesson34RenshuuA.pdf",
         output_dir="output",
         use_deepl=False
     )
